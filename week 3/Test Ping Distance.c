@@ -13,7 +13,7 @@ int main()                                    // main function
 {
   while(2)                                    // Repeat indefinitely
   {
-    int cmDist = ping_cm(10);                 // Get cm distance from Ping)))
+    int cmDist = ping_cm(8);                 // Get cm distance from Ping)))
     if (cmDist < 20){
       print("zo dichtbij!\t");
     } else {
