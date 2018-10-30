@@ -7,9 +7,17 @@ const float WidthRobot = 105.8f;
 const float ticksperdegree = 2.0f*PI*105.8f / 3.25f / 360.0f / 2.0f;
 
 void TurnDegrees(int degrees){
-  int ticks = ticksperdegree * degrees;
+  int ticks = CalculateTicks(degrees);
   drive_goto(ticks, -ticks);
 }
+
+void TurnTicks(int ticks){
+  drive_goto(ticks, -ticks);
+} 
+
+int CalculateTicks(int degrees){
+  return ticksperdegree * degrees;
+}  
 
 
 void DriveCM(int distance){
@@ -27,29 +35,23 @@ int main()
  
   while(1)
   {
+    int turn_in_ticks = CalculateTicks(degreeInterval);
     sleep(5);
-    int lowestvalueindex = 5;//-1;
-    int lowestvalue = 5; //1km
+    int lowestvalueindex = -1;//-1;
+    int lowestvalue = 100000; //1km
     
     for(int intervalcounter = 0; intervalcounter < intervalamount; intervalcounter++){
-      /*
+      
       int measuredvalue = ping_cm(pingpin);
       if(measuredvalue < lowestvalue){
         lowestvalue = measuredvalue; // Distance to object D
         lowestvalueindex = intervalcounter; //closest value angle interval, Rl = this * degreeinterval
-      }*/
-      TurnDegrees(degreeInterval); //turn interval degrees
+      }
+      TurnTicks(turn_in_ticks); //turn interval degrees
     }
-    //turning back in equal steps to found value
-    for(int i = 0; i < intervalamount - lowestvalueindex - 1; i++){
-      TurnDegrees(-degreeInterval);
-    }
+    TurnTicks(-turn_in_ticks * (intervalamount - lowestvalueindex - 1);//turning back
     DriveCM(lowestvalue + PushdistanceCM); //drive to object D+PushdistanceCM
     DriveCM(-(lowestvalue + PushdistanceCM)); //drive back -(D+PushdistanceCM)
-    
-    //turn back to zero
-    for(int i = 0; i < lowestvalueindex; i++){
-      TurnDegrees(-degreeInterval);
-    }
+    TurnTicks(-turn_in_ticks * lowestvalueindex) //turn back to zero
   }  
 }
