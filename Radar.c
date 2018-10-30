@@ -49,9 +49,9 @@ int main()
       }
       TurnTicks(turn_in_ticks); //turn interval degrees
     }
-    TurnTicks(-turn_in_ticks * (intervalamount - lowestvalueindex - 1);//turning back
+    TurnTicks(-turn_in_ticks * (intervalamount - lowestvalueindex - 1));//turning back
     DriveCM(lowestvalue + PushdistanceCM); //drive to object D+PushdistanceCM
     DriveCM(-(lowestvalue + PushdistanceCM)); //drive back -(D+PushdistanceCM)
-    TurnTicks(-turn_in_ticks * lowestvalueindex) //turn back to zero
+    TurnTicks(-turn_in_ticks * lowestvalueindex); //turn back to zero
   }  
 }
