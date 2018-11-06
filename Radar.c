@@ -32,11 +32,11 @@ const int PushdistanceCM = 5;
 int main()                                 
 {
   int intervalamount = TotalDegreeView / degreeInterval;
+  sleep(5);
  
   while(1)
   {
     int turn_in_ticks = CalculateTicks(degreeInterval);
-    sleep(5);
     int lowestvalueindex = -1;//-1;
     int lowestvalue = 100000; //1km
     
