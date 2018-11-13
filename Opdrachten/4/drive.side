@@ -1,4 +1,4 @@
-3 delen combi.c
+drive.c
 >compiler=C
 >memtype=cmm main ram compact
 >optimize=-Os
