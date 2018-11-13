@@ -29,19 +29,18 @@ int main()
   {
     sleep(5);
     int lowestvalueindex = 5;//-1;
-    int lowestvalue = 5; //1km
+    int lowestvalue = 500; //1km
     
     for(int intervalcounter = 0; intervalcounter < intervalamount; intervalcounter++){
-      /*
       int measuredvalue = ping_cm(pingpin);
       if(measuredvalue < lowestvalue){
         lowestvalue = measuredvalue; // Distance to object D
         lowestvalueindex = intervalcounter; //closest value angle interval, Rl = this * degreeinterval
-      }*/
+      }
       TurnDegrees(degreeInterval); //turn interval degrees
     }
     //turning back in equal steps to found value
-    for(int i = 0; i < intervalamount - lowestvalueindex - 1; i++){
+    for(int i = 0; i < (intervalamount - lowestvalueindex - 1); i++){
       TurnDegrees(-degreeInterval);
     }
     DriveCM(lowestvalue + PushdistanceCM); //drive to object D+PushdistanceCM
