@@ -1,4 +1,4 @@
-#include <Verhagencomm.h>
+#include "Verhagencomm.h"
 
 void setup() {
   // put your setup code here, to run once:
@@ -14,7 +14,7 @@ void setup() {
 void loop() {
   
   struct keyvaluepair value;
-  ReadTriple(&value);
+  ReadKeyValuePair(&value);
   if(value.is_valid == true){
     SendStringData("Success", "Data is as following:");
     SendStringData(value.naam, value.value);
