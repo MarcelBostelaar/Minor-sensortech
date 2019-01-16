@@ -17,9 +17,10 @@ void setup() {
 }
 
 void loop() {
-  HandleBoolMessage("Groen", GroenLed);
-  HandleBoolMessage("Rood", RoodLed);
-  HandleBoolMessage("Blauw", BlauwLed);
+  ReadKeyValuePairNew(0);
+//  HandleBoolMessage("Groen", GroenLed);
+//  HandleBoolMessage("Rood", RoodLed);
+//  HandleBoolMessage("Blauw", BlauwLed);
   }
 
 void GroenLed(bool state){

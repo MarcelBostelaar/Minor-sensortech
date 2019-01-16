@@ -21,8 +21,16 @@ struct keyvaluepair{
   bool ValueAsBool();
   float ValueAsFloat();
 };
-void ReadTriple(struct keyvaluepair *fill_in);
 void ReadKeyValuePair(struct keyvaluepair *fill_in);
+void ReadKeyValuePairNew(struct keyvaluepair *fill_in);
 
+template <class T>
+struct ListNode{
+  T *value;
+  struct ListNode *next;
+  void DeleteList();
+  int Length();
+  void AddValue(T *toadd);
+};
 
 #endif

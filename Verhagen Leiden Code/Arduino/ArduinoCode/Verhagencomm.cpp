@@ -5,14 +5,80 @@
 
 int messagereceivedelay = 1000;
 
+using SendMessage = std::tuple<int,char[stringarraysize],char[stringarraysize]>;
+
+//ListNode<SendMessage> *SendAwaitingConfirm = new ListNode<SendMessage>();
+
+//ListNode
+
 const char TransmissionBeginCharacter = '['; //1;
 const char TransmissionEndCharacter = ']'; //2;
 const char UnitStartCharacter = '('; //3;
 const char UnitEndCharacter = ')'; //4; 
 
+//LINKED LIST
+
+template <class T>
+void ListNode<T>::DeleteList(){
+  if(next != 0){
+    next->DeleteList();
+    delete next;
+  }
+  delete value;
+}
+template <class T>
+int ListNode<T>::Length(){
+  if(next != 0){
+    return next->Length() + 1;
+  }
+  return 1;
+}
+template <class T>
+void ListNode<T>::AddValue(T *toadd){
+  if(next != 0){
+    next->AddValue(toadd);
+  }
+  else{
+    next = new ListNode();
+    value = toadd;
+  }
+}
 
 
-//sending
+//COMMON CODE
+bool CharEquality(const char a[], const char b[], int length){
+  for(int i = 0; i < length; i++){
+    if(a[i] == 0 && b[i] == 0){
+      return true; //end of string, rest can be garbage but string would still be equal
+    }
+    if(a[i] != b[i]){
+      return false;
+    }
+  }
+  return true;
+}
+
+bool StringEquality(const char a[], const char b[]){
+  return CharEquality(a, b, stringarraysize);
+}
+
+//STRUCT IMPLEMENTATION
+
+int keyvaluepair::ValueAsInt(){
+  return atoi(value);
+}
+bool keyvaluepair::ValueAsBool(){
+  if(StringEquality(value, "True")){
+    return true;
+  }
+  return false;
+}
+float keyvaluepair::ValueAsFloat(){
+  return atof(value);
+}
+
+
+//SENDING
 void SendRawString(const char value[]){
   for (int i = 0; i < strlen(value) && value[i] != 0; i++)
   {
@@ -61,89 +127,6 @@ void SendBool(bool value){
   }
 }
 
-//returns a pointer to heap allocated char array. Returns zero/null pointer when no valid data could be read. Null pointer is cleaned up.
-char* ReadValue(){
-  if(Serial.peek() != UnitStartCharacter){
-    //SendCharData("DebugMessage: Eerste character is niet het unitstartcharacter, maar", Serial.peek());
-    return 0;
-    }
-  Serial.read();
-  char *string = new char[stringarraysize]{0};
-  int datafound = Serial.readBytesUntil(UnitEndCharacter, string, stringarraysize);
-  //SendIntData("DebugMessage: Gelezen characters", datafound);
-  //SendCharData("DebugMessage: Volgende character", Serial.peek());
-  if(datafound == stringarraysize){
-    delete string;
-    return 0;
-  }
-  if(datafound == 0){
-    delete string;
-    return 0;
-  }
-  //Serial.read();
-  return string;
-}
-
-
-//returns a pointer to an array of char array pointers. Returns null if an error occurred during reading (ie too many datapacks).
-char** ReadFullTransmission(int count){
-  //SendIntData("DebugMessage: aantal chars available", Serial.available());
-  while(Serial.peek() != TransmissionBeginCharacter && Serial.available() > 0){
-    Serial.read();
-    }
-  if(Serial.available() <= 0){
-    //SendStringData("DebugMessage", "Kan geen data lezen, geen chars available");
-    return 0;
-  }
-  Serial.read(); //read transmissiobegincharacter
-  delay(messagereceivedelay); //wait for full message to be transmitted
-  //  SendIntData("DebugMessage: aantal chars available", Serial.available());
-  char** readvalues = new char*[stringarraysize]{0};
-  for(int i =0; i < count; i++){
-    while(Serial.peek() != UnitStartCharacter && Serial.peek() != TransmissionEndCharacter && Serial.available() > 0){
-  //      SendStringData("DebugMessage", "Sla  karakter over omdat het geen unitstart of transmission end karaker is");
-      Serial.read();
-    }
-    if(Serial.peek() == UnitStartCharacter){
-      readvalues[i] = ReadValue();
-      //SendStringData("DebugMessage: gelezenwaarde", readvalues[i]);
-    }
-  }
-  bool DataIntact = true;
-  for(int i = 0; i < count; i++){
-    if(readvalues[i] == 0){
-      DataIntact = false;
-    }
-  }
-  if(Serial.read() == TransmissionEndCharacter && DataIntact){
-    return readvalues;
-  }
-  SendStringData("DebugMessage", "Data niet intact, cleaning up");
-  for(int i = 0; i < count; i++){
-    if(readvalues[i] == 0){
-      delete readvalues[i];
-    }
-  }
-  delete readvalues;
-  return 0;
-}
-
-void ReadKeyValuePair(struct keyvaluepair *fill_in){
-  char** readvalues = ReadFullTransmission(2);
-  if(readvalues == 0){
-    //SendStringData("DebugMessage", "readvalues zijn null");
-    fill_in->is_valid = false;
-    //SendBoolData("DebugMessage: is_valid waarde", fill_in->is_valid);
-    return;
-  }
-  memcpy(fill_in->naam, readvalues[0], stringarraysize);
-  memcpy(fill_in->value, readvalues[1], stringarraysize);
-  fill_in->is_valid = true;
-  delete readvalues[0];
-  delete readvalues[1];
-  delete readvalues;
-}
-
 void SendIntData(const char value_name[], int value){
   StartTransmission();
   SendString(value_name);
@@ -175,65 +158,78 @@ void SendStringData(const char value_name[], const char value[]){
   EndTransmission();
 }
 
-bool CharEquality(const char a[], const char b[], int length){
-  for(int i = 0; i < length; i++){
-    if(a[i] == 0 && b[i] == 0){
-      return true; //end of string, rest can be garbage but string would still be equal
+//RECEIVING
+
+//returns a pointer to heap allocated char array. Returns zero/null pointer when no valid data could be read. Null pointer is cleaned up.
+char* ReadValue(){
+  if(Serial.peek() != UnitStartCharacter){
+    //SendCharData("DebugMessage: Eerste character is niet het unitstartcharacter, maar", Serial.peek());
+    return 0;
     }
-    if(a[i] != b[i]){
-      return false;
+  Serial.read();
+  char *string = new char[stringarraysize]{0};
+  int datafound = Serial.readBytesUntil(UnitEndCharacter, string, stringarraysize);
+  //SendIntData("DebugMessage: Gelezen characters", datafound);
+  //SendCharData("DebugMessage: Volgende character", Serial.peek());
+  if(datafound == stringarraysize){
+    delete string;
+    return 0;
+  }
+  if(datafound == 0){
+    delete string;
+    return 0;
+  }
+  //Serial.read();
+  return string;
+}
+
+struct ListNode<char>* ReadFullTransmissionNew(){
+  while(Serial.peek() != TransmissionBeginCharacter && Serial.available() > 0){
+    Serial.read();
     }
-  }
-  return true;
-}
-
-bool StringEquality(const char a[], const char b[]){
-  return CharEquality(a, b, stringarraysize);
-}
-
-int GetCommon(char a[], char b[], char c[]){
-  if(StringEquality(a,b)){
-    return 1;
-  }
-  if(StringEquality(a,c)){
-    return 1;
-  }
-  if(StringEquality(b,c)){
-    return 2;
-  }
-  return 0;
-}
-
-void ReadTriple(struct keyvaluepair *fill_in){
-  fill_in->is_valid = false;
   if(Serial.available() <= 0){
-    return;
+    return 0;
   }
-  struct keyvaluepair readvalues[3];
-  ReadKeyValuePair(&readvalues[0]);
-  ReadKeyValuePair(&readvalues[1]);
-  ReadKeyValuePair(&readvalues[2]);
-  int name = GetCommon(readvalues[1].naam, readvalues[1].naam, readvalues[2].naam);
-  int value = GetCommon(readvalues[1].value,  readvalues[1].value, readvalues[2].value);
-  
-  if(name == 0 || value == 0){
-    return;
+  Serial.read(); //read transmissiobegincharacter
+  delay(messagereceivedelay); //wait for full message to be transmitted
+  bool DataIsValid = true;
+  struct ListNode<char> root = ListNode<char>(); //dummy node with no value that acts as a container object for the list;
+  while(Serial.peek() != TransmissionEndCharacter && Serial.available() > 0){
+    while(Serial.peek() != UnitStartCharacter && Serial.peek() != TransmissionEndCharacter && Serial.available() > 0){
+      Serial.read();
+    }
+    if(Serial.peek() == UnitStartCharacter){
+      char* readvalue = ReadValue();
+      if(readvalue == 0){
+        DataIsValid = false;
+      }
+      else{
+        root.AddValue(readvalue);
+      }
+      delete readvalue;
+    }
   }
-  fill_in->is_valid = true;
-  memcpy(fill_in->naam, readvalues[name-1].naam, stringarraysize);
-  memcpy(fill_in->value, readvalues[value-1].value, stringarraysize);
+
+  if(!DataIsValid){
+    root.DeleteList();
+    return 0;
+  }
+  if(Serial.read() == TransmissionEndCharacter){
+    return root.next;
+  }
 }
 
+void ReadKeyValuePairNew(struct keyvaluepair *fill_in){
+  struct ListNode<char> *root = ReadFullTransmissionNew();
+  if(root != 0){
+    SendIntData("DebugMessage: received amount of elements:", root->Length());
 
-int keyvaluepair::ValueAsInt(){
-  return atoi(value);
-}
-bool keyvaluepair::ValueAsBool(){
-  if(StringEquality(value, "True")){
-    return true;
+    
+    
+    
+    root->DeleteList();
+    delete root;
   }
-  return false;
 }
-float keyvaluepair::ValueAsFloat(){
-  return atof(value);
-}
+
+//MESSAGE RECEIVE CONTROLLER
