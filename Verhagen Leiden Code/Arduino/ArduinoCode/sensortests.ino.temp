@@ -1,6 +1,0 @@
-void setup() {
-}
-
-void loop() {
-  Seiral.write(DigitalRead(10));
-}

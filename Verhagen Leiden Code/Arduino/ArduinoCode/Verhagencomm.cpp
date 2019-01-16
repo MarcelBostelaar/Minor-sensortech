@@ -1,4 +1,4 @@
-#define Verhagencomm_h
+//#define Verhagencomm_h
 
 #include "Arduino.h"
 #include "Verhagencomm.h"
@@ -175,8 +175,11 @@ void SendStringData(const char value_name[], const char value[]){
   EndTransmission();
 }
 
-bool CharEquality(char a[], char b[], int length){
+bool CharEquality(const char a[], const char b[], int length){
   for(int i = 0; i < length; i++){
+    if(a[i] == 0 && b[i] == 0){
+      return true; //end of string, rest can be garbage but string would still be equal
+    }
     if(a[i] != b[i]){
       return false;
     }
@@ -184,7 +187,7 @@ bool CharEquality(char a[], char b[], int length){
   return true;
 }
 
-bool StringEquality(char a[], char b[]){
+bool StringEquality(const char a[], const char b[]){
   return CharEquality(a, b, stringarraysize);
 }
 
@@ -219,4 +222,18 @@ void ReadTriple(struct keyvaluepair *fill_in){
   fill_in->is_valid = true;
   memcpy(fill_in->naam, readvalues[name-1].naam, stringarraysize);
   memcpy(fill_in->value, readvalues[value-1].value, stringarraysize);
+}
+
+
+int keyvaluepair::ValueAsInt(){
+  return atoi(value);
+}
+bool keyvaluepair::ValueAsBool(){
+  if(StringEquality(value, "True")){
+    return true;
+  }
+  return false;
+}
+float keyvaluepair::ValueAsFloat(){
+  return atof(value);
 }
